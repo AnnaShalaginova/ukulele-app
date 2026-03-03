@@ -1,186 +1,320 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "./supabase";
 
-const validRoots = [
-  "A","B","C","D","E","F","G",
-  "Am","Bm","Cm","Dm","Em","Fm","Gm",
-  "A7","B7","C7","D7","E7","F7","G7",
-  "Amaj7","Cmaj7","Dmaj7","Emaj7","Fmaj7","Gmaj7"
-];
+function App() {
+  const [user, setUser] = useState(null);
 
-export default function App() {
+  // Song form state
   const [title, setTitle] = useState("");
   const [chordsInput, setChordsInput] = useState("");
   const [strumming, setStrumming] = useState("");
-  const [formattedChords, setFormattedChords] = useState([]);
-  const [error, setError] = useState("");
   const [songs, setSongs] = useState([]);
 
+  // =============================
+  // AUTH SETUP
+  // =============================
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("ukuleleSongs")) || [];
-    setSongs(saved);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const validateChords = (chords) => {
-    return chords.every(chord => validRoots.includes(chord));
-  };
-
-  const formatChords = () => {
-    setError("");
-    const chords = chordsInput.trim().split(/\s+/);
-
-    if (!validateChords(chords)) {
-      setError("One or more chords are invalid.");
-      return;
+  useEffect(() => {
+    if (user) {
+      fetchSongs();
     }
+  }, [user]);
 
-    const grouped = [];
-    for (let i = 0; i < chords.length; i += 4) {
-      grouped.push(chords.slice(i, i + 4));
+  async function signInWithGoogle() {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setSongs([]);
+  }
+
+  // =============================
+  // FETCH SONGS
+  // =============================
+  async function fetchSongs() {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("songs")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+    } else {
+      setSongs(data);
     }
+  }
 
-    setFormattedChords(grouped);
-  };
+  // =============================
+  // SAVE SONG
+  // =============================
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!user) return;
 
-  const saveSong = () => {
-    if (!title) {
-      setError("Please enter a song title.");
-      return;
+    const { error } = await supabase.from("songs").insert([
+      {
+        title,
+        chords_input: chordsInput,
+        strumming,
+        user_id: user.id,
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      alert(error.message);
+    } else {
+      setTitle("");
+      setChordsInput("");
+      setStrumming("");
+      fetchSongs();
     }
+  }
 
-    const newSong = { title, chordsInput, strumming };
-    const updatedSongs = [...songs, newSong];
-    setSongs(updatedSongs);
-    localStorage.setItem("ukuleleSongs", JSON.stringify(updatedSongs));
-    setError("");
-  };
-
-  const loadSong = (song) => {
+  // =============================
+  // LOAD SONG
+  // =============================
+  function loadSong(song) {
     setTitle(song.title);
-    setChordsInput(song.chordsInput);
+    setChordsInput(song.chords_input);
     setStrumming(song.strumming);
-    setFormattedChords([]);
-  };
+  }
 
-  const printSong = () => {
-    window.print();
-  };
+  // =============================
+  // DELETE SONG
+  // =============================
+  async function deleteSong(id) {
+    const { error } = await supabase
+      .from("songs")
+      .delete()
+      .eq("id", id);
 
+    if (error) {
+      console.error(error);
+    } else {
+      fetchSongs();
+    }
+  }
+
+  // =============================
+  // NOT LOGGED IN VIEW
+  // =============================
+  if (!user) {
+    return (
+      <div className="container">
+        <h1>Ukulele Song Builder 🎸</h1>
+        <button onClick={signInWithGoogle}>
+          Sign In with Google
+        </button>
+        <style>{styles}</style>
+      </div>
+    );
+  }
+
+  // =============================
+  // LOGGED IN VIEW
+  // =============================
   return (
     <div className="container">
+      <div className="top-bar">
+        <p>
+          Welcome, <strong>{user.email}</strong>
+        </p>
+        <button onClick={signOut}>Sign Out</button>
+      </div>
+
       <h1>Ukulele Song Builder 🎸</h1>
 
-      <input
-        placeholder="Song Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      <div className="main-layout">
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="song-form">
+          <input
+            type="text"
+            placeholder="Song Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
 
-      <textarea
-        placeholder="Enter chords separated by spaces (e.g., C G Am F)"
-        value={chordsInput}
-        onChange={(e) => setChordsInput(e.target.value)}
-      />
+          <textarea
+            placeholder="Chords / Lyrics"
+            value={chordsInput}
+            onChange={(e) => setChordsInput(e.target.value)}
+            required
+          />
 
-      <input
-        placeholder="Strumming Pattern (e.g., D-DU-UDU)"
-        value={strumming}
-        onChange={(e) => setStrumming(e.target.value)}
-      />
+          <input
+            type="text"
+            placeholder="Strumming Pattern"
+            value={strumming}
+            onChange={(e) => setStrumming(e.target.value)}
+          />
 
-      <div className="buttons">
-        <button onClick={formatChords}>Format</button>
-        <button onClick={saveSong}>Save</button>
-        <button onClick={printSong}>Print</button>
-      </div>
+          <button type="submit">Save Song</button>
+        </form>
 
-      {error && <p className="error">{error}</p>}
+        {/* SONG LIST */}
+        <div className="song-list">
+          <h2>Your Songs</h2>
 
-      {strumming && (
-        <div className="strumming">
-          <strong>Strumming Pattern:</strong> {strumming}
-        </div>
-      )}
+          {songs.length === 0 ? (
+            <p>No songs yet 🎵</p>
+          ) : (
+            songs.map((song) => (
+              <div key={song.id} className="song-card">
+                <h3
+                  className="clickable"
+                  onClick={() => loadSong(song)}
+                >
+                  {song.title}
+                </h3>
 
-      <div className="output">
-        {formattedChords.map((group, index) => (
-          <div key={index} className="chord-row">
-            {group.map((chord, i) => (
-              <div key={i} className="chord">
-                {chord}
+                <p>
+                  <strong>Strumming:</strong>{" "}
+                  {song.strumming || "—"}
+                </p>
+
+                <div className="song-actions">
+                  <button onClick={() => loadSong(song)}>
+                    Load
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteSong(song.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        ))}
+            ))
+          )}
+        </div>
       </div>
 
-      <h2>Saved Songs</h2>
-      <ul>
-        {songs.map((song, index) => (
-          <li key={index}>
-            <button onClick={() => loadSong(song)}>
-              {song.title}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <style>{`
-        .container {
-          max-width: 800px;
-          margin: auto;
-          padding: 20px;
-          font-family: Arial;
-        }
-
-        input, textarea {
-          width: 100%;
-          padding: 10px;
-          margin-bottom: 10px;
-          font-size: 16px;
-        }
-
-        textarea {
-          height: 80px;
-        }
-
-        .buttons button {
-          margin-right: 10px;
-          padding: 8px 16px;
-          cursor: pointer;
-        }
-
-        .error {
-          color: red;
-        }
-
-        .output {
-          margin-top: 20px;
-        }
-
-        .chord-row {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 15px;
-          font-size: 20px;
-          font-weight: bold;
-        }
-
-        .chord {
-          min-width: 50px;
-          text-align: center;
-        }
-
-        .strumming {
-          margin-top: 15px;
-          font-size: 18px;
-        }
-
-        @media print {
-          button, textarea, input, ul, h2 {
-            display: none;
-          }
-        }
-      `}</style>
+      <style>{styles}</style>
     </div>
   );
 }
+
+// =============================
+// STYLES
+// =============================
+const styles = `
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+  }
+
+  .container {
+    padding: 30px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .main-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .song-form {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  input, textarea {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  button:hover {
+    background-color: #45a049;
+  }
+
+  .song-list {
+    width: 350px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .song-card {
+    background: #fafafa;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+
+  .song-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .delete-btn {
+    background-color: #e74c3c;
+  }
+
+  .delete-btn:hover {
+    background-color: #c0392b;
+  }
+
+  .clickable {
+    cursor: pointer;
+    color: #4CAF50;
+  }
+
+  .clickable:hover {
+    text-decoration: underline;
+  }
+`;
+
+export default App;
