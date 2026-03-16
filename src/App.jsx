@@ -1,7 +1,40 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
+import ChordDiagram from "./ChordDiagram";
+
+// =============================
+// CHORD DATA
+// =============================
+const chordShapes = {
+  C: ["0", "0", "0", "3"],
+  G: ["0", "2", "3", "2"],
+  Am: ["2", "0", "0", "0"],
+  F: ["2", "0", "1", "0"],
+  Dm: ["2", "2", "1", "0"],
+  Em: ["0", "4", "3", "2"],
+  A: ["2", "1", "0", "0"],
+  D: ["2", "2", "2", "0"]
+};
+
+// =============================
+// EXTRACT CHORDS FROM TEXT
+// =============================
+function extractChords(text) {
+  const possibleChords = text
+    .split(/\s+/) // split by spaces or new lines
+    .map(c => c.trim());
+
+  const chordPattern = /^[A-G](#|b)?(m|7)?$/;
+
+  const matches = possibleChords.filter(chord =>
+    chordPattern.test(chord)
+  );
+
+  return [...new Set(matches)];
+}
 
 function App() {
+  console.log("APP RENDERED");
   const [user, setUser] = useState(null);
 
   // Song form state
@@ -9,6 +42,10 @@ function App() {
   const [chordsInput, setChordsInput] = useState("");
   const [strumming, setStrumming] = useState("");
   const [songs, setSongs] = useState([]);
+
+  // Detect chords automatically
+  const chords = extractChords(chordsInput);
+  console.log("Detected chords:", chords);
 
   // =============================
   // AUTH SETUP
@@ -35,12 +72,19 @@ function App() {
     }
   }, [user]);
 
+  // async function signInWithGoogle() {
+  //   await supabase.auth.signInWithOAuth({
+  //     provider: "google",
+  //   });
+  // }
   async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
-  }
-
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+}
   async function signOut() {
     await supabase.auth.signOut();
     setSongs([]);
@@ -147,8 +191,10 @@ function App() {
       <h1>Ukulele Song Builder 🎸</h1>
 
       <div className="main-layout">
+
         {/* FORM */}
         <form onSubmit={handleSubmit} className="song-form">
+
           <input
             type="text"
             placeholder="Song Title"
@@ -160,9 +206,23 @@ function App() {
           <textarea
             placeholder="Chords / Lyrics"
             value={chordsInput}
-            onChange={(e) => setChordsInput(e.target.value)}
+            onChange={(e) => {
+              console.log("TEXT:", e.target.value);
+              setChordsInput(e.target.value);
+            }}
             required
           />
+
+          {/* AUTO CHORD DIAGRAMS */}
+         <div className="chord-diagrams">
+            {chords.map((chord) => (
+              <ChordDiagram
+                key={chord}
+                chord={chord}
+                shape={chordShapes[chord]}
+              />
+            ))}
+          </div>
 
           <input
             type="text"
@@ -172,10 +232,12 @@ function App() {
           />
 
           <button type="submit">Save Song</button>
+
         </form>
 
         {/* SONG LIST */}
         <div className="song-list">
+
           <h2>Your Songs</h2>
 
           {songs.length === 0 ? (
@@ -183,6 +245,7 @@ function App() {
           ) : (
             songs.map((song) => (
               <div key={song.id} className="song-card">
+
                 <h3
                   className="clickable"
                   onClick={() => loadSong(song)}
@@ -191,24 +254,28 @@ function App() {
                 </h3>
 
                 <p>
-                  <strong>Strumming:</strong>{" "}
-                  {song.strumming || "—"}
+                  <strong>Strumming:</strong> {song.strumming || "—"}
                 </p>
 
                 <div className="song-actions">
+
                   <button onClick={() => loadSong(song)}>
                     Load
                   </button>
+
                   <button
                     className="delete-btn"
                     onClick={() => deleteSong(song.id)}
                   >
                     Delete
                   </button>
+
                 </div>
+
               </div>
             ))
           )}
+
         </div>
       </div>
 
@@ -221,100 +288,133 @@ function App() {
 // STYLES
 // =============================
 const styles = `
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
 
-  .container {
-    padding: 30px;
-  }
+.container {
+  padding: 30px;
+}
 
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-  .main-layout {
-    display: flex;
-    gap: 40px;
-    align-items: flex-start;
-  }
+.main-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
 
-  .song-form {
-    width: 400px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+.song-form {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-  input, textarea {
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+input, textarea {
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
 
-  textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
 
-  button {
-    padding: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: none;
-    background-color: #4CAF50;
-    color: white;
-  }
+button {
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+}
 
-  button:hover {
-    background-color: #45a049;
-  }
+button:hover {
+  background-color: #45a049;
+}
 
-  .song-list {
-    width: 350px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
+.song-list {
+  width: 350px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 
-  .song-card {
-    background: #fafafa;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid #eee;
-  }
+.song-card {
+  background: #fafafa;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
 
-  .song-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-  }
+.song-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
 
-  .delete-btn {
-    background-color: #e74c3c;
-  }
+.delete-btn {
+  background-color: #e74c3c;
+}
 
-  .delete-btn:hover {
-    background-color: #c0392b;
-  }
+.delete-btn:hover {
+  background-color: #c0392b;
+}
 
-  .clickable {
-    cursor: pointer;
-    color: #4CAF50;
-  }
+.clickable {
+  cursor: pointer;
+  color: #4CAF50;
+}
 
-  .clickable:hover {
-    text-decoration: underline;
-  }
+.clickable:hover {
+  text-decoration: underline;
+}
+
+.chord-diagrams {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.chord {
+  text-align: center;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 70px;
+}
+
+.diagram {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.string {
+  width: 12px;
+  height: 60px;
+  border-left: 2px solid black;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 12px;
+}
 `;
 
 export default App;
