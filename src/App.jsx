@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import ChordDiagram from "./ChordDiagram";
 
+const sampleSong = `[C]Row, row, row your [G]boat
+[C]Gently down the [G]stream
+[C]Merrily, merrily, [F]merrily, merrily
+[C]Life is but a [G]dream`;
+
 // =============================
 // CHORD DATA
 // =============================
@@ -20,35 +25,36 @@ const chordShapes = {
 // EXTRACT CHORDS FROM TEXT
 // =============================
 function extractChords(text) {
-  const possibleChords = text
-    .split(/\s+/) // split by spaces or new lines
-    .map(c => c.trim());
+  if (!text) return [];
 
-  const chordPattern = /^[A-G](#|b)?(m|7)?$/;
+  const chordRegex = /\[([A-G](#|b)?(m|7)?)\]/g;
+  const matches = [...text.matchAll(chordRegex)];
+  const chords = matches.map(match => match[1]);
 
-  const matches = possibleChords.filter(chord =>
-    chordPattern.test(chord)
-  );
-
-  return [...new Set(matches)];
+  return [...new Set(chords)];
 }
 
 function App() {
   console.log("APP RENDERED");
+
   const [user, setUser] = useState(null);
 
-  // Song form state
+  // =============================
+  // STATE
+  // =============================
   const [title, setTitle] = useState("");
   const [chordsInput, setChordsInput] = useState("");
   const [strumming, setStrumming] = useState("");
   const [songs, setSongs] = useState([]);
+
+  console.log("chordsInput state:", chordsInput);
 
   // Detect chords automatically
   const chords = extractChords(chordsInput);
   console.log("Detected chords:", chords);
 
   // =============================
-  // AUTH SETUP
+  // AUTH
   // =============================
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,19 +78,15 @@ function App() {
     }
   }, [user]);
 
-  // async function signInWithGoogle() {
-  //   await supabase.auth.signInWithOAuth({
-  //     provider: "google",
-  //   });
-  // }
   async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin
-    }
-  });
-}
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     setSongs([]);
@@ -105,6 +107,7 @@ function App() {
     if (error) {
       console.error(error);
     } else {
+      console.log("Songs from DB:", data);
       setSongs(data);
     }
   }
@@ -130,16 +133,26 @@ function App() {
       alert(error.message);
     } else {
       setTitle("");
-      setChordsInput("");
+      setChordsInput(""); // ✅ clears form
       setStrumming("");
       fetchSongs();
     }
   }
 
   // =============================
+  // SAMPLE SONG
+  // =============================
+  function loadSampleSong() {
+    setTitle("Row Row Row Your Boat");
+    setChordsInput(sampleSong);
+    setStrumming("D-D-U-U-D-U");
+  }
+
+  // =============================
   // LOAD SONG
   // =============================
   function loadSong(song) {
+    console.log("LOADING SONG:", song);
     setTitle(song.title);
     setChordsInput(song.chords_input);
     setStrumming(song.strumming);
@@ -162,7 +175,7 @@ function App() {
   }
 
   // =============================
-  // NOT LOGGED IN VIEW
+  // NOT LOGGED IN
   // =============================
   if (!user) {
     return (
@@ -177,7 +190,7 @@ function App() {
   }
 
   // =============================
-  // LOGGED IN VIEW
+  // MAIN UI
   // =============================
   return (
     <div className="container">
@@ -188,7 +201,17 @@ function App() {
         <button onClick={signOut}>Sign Out</button>
       </div>
 
-      <h1>Ukulele Song Builder 🎸</h1>
+      <h1>Ukulele Song Builder</h1>
+
+      {/* SAMPLE SONG (DISPLAY ONLY) */}
+      <div className="sample-box">
+        <p>Try a sample song:</p>
+        <pre>{sampleSong}</pre>
+
+        <button onClick={loadSampleSong}>
+          Load Sample Song
+        </button>
+      </div>
 
       <div className="main-layout">
 
@@ -206,15 +229,12 @@ function App() {
           <textarea
             placeholder="Chords / Lyrics"
             value={chordsInput}
-            onChange={(e) => {
-              console.log("TEXT:", e.target.value);
-              setChordsInput(e.target.value);
-            }}
+            onChange={(e) => setChordsInput(e.target.value)}
             required
           />
 
-          {/* AUTO CHORD DIAGRAMS */}
-         <div className="chord-diagrams">
+          {/* CHORD DIAGRAMS */}
+          <div className="chord-diagrams">
             {chords.map((chord) => (
               <ChordDiagram
                 key={chord}
@@ -237,7 +257,6 @@ function App() {
 
         {/* SONG LIST */}
         <div className="song-list">
-
           <h2>Your Songs</h2>
 
           {songs.length === 0 ? (
@@ -258,7 +277,6 @@ function App() {
                 </p>
 
                 <div className="song-actions">
-
                   <button onClick={() => loadSong(song)}>
                     Load
                   </button>
@@ -269,13 +287,11 @@ function App() {
                   >
                     Delete
                   </button>
-
                 </div>
 
               </div>
             ))
           )}
-
         </div>
       </div>
 
