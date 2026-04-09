@@ -45,6 +45,7 @@ function App() {
   const [title, setTitle] = useState("");
   const [chordsInput, setChordsInput] = useState("");
   const [strumming, setStrumming] = useState("");
+  const [editingId, setEditingId] = useState(null);
   const [songs, setSongs] = useState([]);
 
   console.log("chordsInput state:", chordsInput);
@@ -53,9 +54,21 @@ function App() {
   const chords = extractChords(chordsInput);
   console.log("Detected chords:", chords);
 
-  // =============================
-  // AUTH
-  // =============================
+  // ============= (rest of auth) =============
+  async function signInWithGoogle() {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setSongs([]);
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -78,20 +91,6 @@ function App() {
     }
   }, [user]);
 
-  async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin
-      }
-    });
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    setSongs([]);
-  }
-
   // =============================
   // FETCH SONGS
   // =============================
@@ -113,36 +112,56 @@ function App() {
   }
 
   // =============================
-  // SAVE SONG
+  // SAVE / UPDATE SONG
   // =============================
   async function handleSubmit(e) {
     e.preventDefault();
     if (!user) return;
 
-    const { error } = await supabase.from("songs").insert([
-      {
-        title,
-        chords_input: chordsInput,
-        strumming,
-        user_id: user.id,
-      },
-    ]);
+    const songData = {
+      title,
+      chords_input: chordsInput,
+      strumming,
+      user_id: user.id,
+    };
+
+    let error;
+    if (editingId) {
+      // UPDATE existing song
+      const { error: updateError } = await supabase
+        .from("songs")
+        .update(songData)
+        .eq("id", editingId);
+      error = updateError;
+    } else {
+      // INSERT new song
+      const { error: insertError } = await supabase
+        .from("songs")
+        .insert([songData]);
+      error = insertError;
+    }
 
     if (error) {
       console.error(error);
       alert(error.message);
     } else {
-      setTitle("");
-      setChordsInput(""); // ✅ clears form
-      setStrumming("");
+      clearForm();
       fetchSongs();
     }
+  }
+
+  function clearForm() {
+    setTitle("");
+    setChordsInput("");
+    setStrumming("");
+    setEditingId(null);
   }
 
   // =============================
   // SAMPLE SONG
   // =============================
   function loadSampleSong() {
+    setEditingId(null); // Ensure we are creating a new song if they save this
     setTitle("Row Row Row Your Boat");
     setChordsInput(sampleSong);
     setStrumming("D-D-U-U-D-U");
@@ -153,6 +172,7 @@ function App() {
   // =============================
   function loadSong(song) {
     console.log("LOADING SONG:", song);
+    setEditingId(song.id);
     setTitle(song.title);
     setChordsInput(song.chords_input);
     setStrumming(song.strumming);
@@ -217,6 +237,7 @@ function App() {
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="song-form">
+          <h2>{editingId ? `Editing: ${title}` : "Add New Song"}</h2>
 
           <input
             type="text"
@@ -227,7 +248,7 @@ function App() {
           />
 
           <textarea
-            placeholder="Chords / Lyrics"
+            placeholder="Chords / Lyrics (e.g. [C]Row your boat)"
             value={chordsInput}
             onChange={(e) => setChordsInput(e.target.value)}
             required
@@ -251,7 +272,20 @@ function App() {
             onChange={(e) => setStrumming(e.target.value)}
           />
 
-          <button type="submit">Save Song</button>
+          <div className="form-actions">
+            <button type="submit">
+              {editingId ? "Update Song" : "Save Song"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={clearForm}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
 
         </form>
 
@@ -376,17 +410,17 @@ button:hover {
   border: 1px solid #eee;
 }
 
-.song-actions {
+.song-actions, .form-actions {
   display: flex;
   gap: 10px;
   margin-top: 10px;
 }
 
-.delete-btn {
+.delete-btn, .cancel-btn {
   background-color: #e74c3c;
 }
 
-.delete-btn:hover {
+.delete-btn:hover, .cancel-btn:hover {
   background-color: #c0392b;
 }
 
