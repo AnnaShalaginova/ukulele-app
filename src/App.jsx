@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import ChordDiagram from "./ChordDiagram";
+import { chordShapes } from "./data/chords";
 
 const sampleSong = `[C]Row, row, row your [G]boat
 [C]Gently down the [G]stream
 [C]Merrily, merrily, [F]merrily, merrily
 [C]Life is but a [G]dream`;
-
-// =============================
-// CHORD DATA
-// =============================
-const chordShapes = {
-  C: ["0", "0", "0", "3"],
-  G: ["0", "2", "3", "2"],
-  Am: ["2", "0", "0", "0"],
-  F: ["2", "0", "1", "0"],
-  Dm: ["2", "2", "1", "0"],
-  Em: ["0", "4", "3", "2"],
-  A: ["2", "1", "0", "0"],
-  D: ["2", "2", "2", "0"]
-};
 
 // =============================
 // EXTRACT CHORDS FROM TEXT
@@ -223,15 +210,18 @@ function App() {
 
       <h1>Ukulele Song Builder</h1>
 
-      {/* SAMPLE SONG (DISPLAY ONLY) */}
-      <div className="sample-box">
-        <p>Try a sample song:</p>
-        <pre>{sampleSong}</pre>
-
-        <button onClick={loadSampleSong}>
-          Load Sample Song
-        </button>
-      </div>
+      {/* SAMPLE SONG OPTION */}
+      {!editingId && !title && !chordsInput && (
+        <div className="sample-option">
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={loadSampleSong}
+          >
+            Load Sample Song
+          </button>
+        </div>
+      )}
 
       <div className="main-layout">
 
@@ -348,6 +338,18 @@ body {
   padding: 30px;
 }
 
+.sample-option {
+  margin-bottom: 20px;
+}
+
+.secondary-btn {
+  background-color: #3498db;
+}
+
+.secondary-btn:hover {
+  background-color: #2980b9;
+}
+
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -435,35 +437,25 @@ button:hover {
 
 .chord-diagrams {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
   margin-top: 10px;
 }
 
-.chord {
+.chord-card {
   text-align: center;
   background: white;
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  width: 70px;
+  width: 90px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.diagram {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
-
-.string {
-  width: 12px;
-  height: 60px;
-  border-left: 2px solid black;
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  font-size: 12px;
+.chord-title {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #333;
 }
 `;
 

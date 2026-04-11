@@ -5,15 +5,15 @@ import ChordDiagram from './ChordDiagram';
 test('renders the chord name', () => {
   render(<ChordDiagram chord="C" shape={["0", "0", "0", "3"]} />);
   
-  const chordElement = screen.getByText(/C/i);
-  expect(chordElement).toBeInTheDocument();
+  const title = screen.getByText("C");
+  expect(title).toBeInTheDocument();
 });
 
 test('renders the correct chord name', () => {
   render(<ChordDiagram chord="G" shape={["0", "2", "3", "2"]} />);
   
-  const chordElement = screen.getByText(/G/i);
-  expect(chordElement).toBeInTheDocument();
+  const title = screen.getByText("G");
+  expect(title).toBeInTheDocument();
 });
 
 test('does not render if shape is missing', () => {
