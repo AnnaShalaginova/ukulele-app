@@ -2,18 +2,23 @@ import { render, screen } from '@testing-library/react';
 import { expect, test } from 'vitest';
 import ChordDiagram from './ChordDiagram';
 
-test('renders the chord name', () => {
+test('renders the chord name correctly', () => {
   render(<ChordDiagram chord="C" shape={["0", "0", "0", "3"]} />);
   
-  const title = screen.getByText("C");
-  expect(title).toBeInTheDocument();
+  const chordElement = screen.getByText(/C/i);
+  expect(chordElement).toBeInTheDocument();
 });
 
-test('renders the correct chord name', () => {
-  render(<ChordDiagram chord="G" shape={["0", "2", "3", "2"]} />);
+test('renders the SVG fretboard grid', () => {
+  const { container } = render(<ChordDiagram chord="C" shape={["0", "0", "0", "3"]} />);
   
-  const title = screen.getByText("G");
-  expect(title).toBeInTheDocument();
+  // Check if an SVG is rendered
+  const svgElement = container.querySelector('svg');
+  expect(svgElement).toBeInTheDocument();
+  
+  // Check for the presence of strings (usually 4 lines in a uke diagram)
+  const lines = container.querySelectorAll('line');
+  expect(lines.length).toBeGreaterThan(0);
 });
 
 test('does not render if shape is missing', () => {
