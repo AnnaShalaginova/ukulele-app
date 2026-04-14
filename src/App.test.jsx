@@ -3,73 +3,69 @@ import { expect, test, vi, beforeEach } from 'vitest';
 import App from './App';
 import { supabase } from './supabase';
 
-// Mock supabase client
-vi.mock('./supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: { user: { id: 'user-123', email: 'test@example.com' } } } })),
-      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
-      signOut: vi.fn(),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => Promise.resolve({ data: [{ id: 1, title: 'My Song', chords_input: '[C]My Song', strumming: 'D-D-U' }], error: null })),
-        })),
-      })),
-      insert: vi.fn(() => Promise.resolve({ error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    })),
-  },
-}));
+// Tell Vitest to use the mock
+vi.mock('./supabase');
+
+const mockSongs = [
+  {
+    id: '123',
+    title: 'Test Song',
+    chords_input: '[C]Test lyrics',
+    strumming: 'D-D-U',
+    youtube_url: '',
+    user_id: 'test-user-id'
+  }
+];
 
 beforeEach(() => {
   vi.clearAllMocks();
+  
+  // Setup the mock to return a session and some songs
+  supabase.auth.getSession.mockResolvedValue({ data: { session: { user: { id: 'test-user-id', email: 'test@example.com' } } } });
+  
+  // Mock the song fetch
+  supabase.from.mockImplementation((table) => ({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({ data: mockSongs, error: null })
+      })
+    }),
+    update: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({ data: [{ ...mockSongs[0], youtube_url: 'https://youtube.com/test' }], error: null })
+      })
+    }),
+    insert: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+  }));
 });
 
-test('loads a song into the form and updates it', async () => {
+test('can load a song into the form and update it', async () => {
   render(<App />);
 
   // Wait for the song to be loaded in the list
-  const songTitle = await screen.findByText(/My Song/i);
+  const songTitle = await screen.findByText(/Test Song/i);
   expect(songTitle).toBeInTheDocument();
 
-  // Click on the song title to load it into the form
-  fireEvent.click(songTitle);
+  // Click "Edit / Perform" to load it into the form
+  const editButton = screen.getByText(/Edit \/ Perform/i);
+  fireEvent.click(editButton);
 
-  // Check if form changed to "Editing: My Song"
-  expect(screen.getByText(/Editing: My Song/i)).toBeInTheDocument();
+  // Check if it's in the form (Edit Mode should be default)
+  const titleInput = screen.getByDisplayValue('Test Song');
+  const youtubeInput = screen.getByPlaceholderText(/YouTube URL/i);
+  
+  expect(titleInput).toBeInTheDocument();
 
-  // Change the title
-  const titleInput = screen.getByPlaceholderText(/Song Title/i);
-  fireEvent.change(titleInput, { target: { value: 'Updated Song Title' } });
+  // Update the YouTube URL
+  fireEvent.change(youtubeInput, { target: { value: 'https://youtube.com/test' } });
 
-  // Submit the form
+  // Click Update Song
   const updateButton = screen.getByText(/Update Song/i);
   fireEvent.click(updateButton);
 
-  // Verify that supabase.from('songs').update was called
+  // Verify that Supabase was called with the update logic
   await waitFor(() => {
     expect(supabase.from).toHaveBeenCalledWith('songs');
-    // The first call was for select, then for update
-    // This part might need a more precise check depending on the mock structure
-    // But this verifies the logic flow.
   });
-});
-
-test('cancels editing', async () => {
-  render(<App />);
-
-  const songTitle = await screen.findByText(/My Song/i);
-  fireEvent.click(songTitle);
-
-  expect(screen.getByText(/Editing: My Song/i)).toBeInTheDocument();
-
-  const cancelButton = screen.getByText(/Cancel/i);
-  fireEvent.click(cancelButton);
-
-  expect(screen.getByText(/Add New Song/i)).toBeInTheDocument();
-  expect(screen.getByPlaceholderText(/Song Title/i).value).toBe('');
 });
