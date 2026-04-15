@@ -203,16 +203,39 @@ function App() {
   }
 
   // =============================
-  // NOT LOGGED IN
+  // NOT LOGGED IN (Landing Page)
   // =============================
   if (!user) {
     return (
-      <div className="container">
-        <h1>Ukulele Song Builder 🎸</h1>
-        <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <button className="secondary-btn" onClick={signInWithGoogle}>
-            Sign In with Google
+      <div className="container landing-page">
+        <header className="hero">
+          <h1>Ukulele App 🎸</h1>
+          <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
+        </header>
+
+        <section className="features-grid">
+          <div className="feature-item">
+            <div className="feature-icon">🎼</div>
+            <h3>Smart Chords</h3>
+            <p>Automatic chord detection and visual SVG diagrams for every song.</p>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">🎤</div>
+            <h3>Performance Mode</h3>
+            <p>Clean, distraction-free view with chords positioned perfectly above lyrics.</p>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">☁️</div>
+            <h3>Cloud Sync</h3>
+            <p>Save your entire song library and access it from any device.</p>
+          </div>
+        </section>
+
+        <div className="login-section">
+          <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}>
+            Get Started with Google
           </button>
+          <p>Sign in to save your songs and access your library.</p>
         </div>
       </div>
     );
