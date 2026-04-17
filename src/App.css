@@ -321,6 +321,11 @@ button[type="submit"]:hover {
   -webkit-text-fill-color: transparent;
 }
 
+.ukulele-icon {
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
 .hero p {
   font-size: 1.5rem;
   color: var(--text-muted);

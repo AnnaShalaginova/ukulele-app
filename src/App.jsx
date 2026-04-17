@@ -209,8 +209,15 @@ function App() {
     return (
       <div className="container landing-page">
         <header className="hero">
-          <h1>Ukulele App 🎸</h1>
+          <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
+          <div className="ukulele-icon" style={{ marginTop: '20px' }}>
+            <img 
+              src="ukulele-landing.png" 
+              alt="Ukulele" 
+              style={{ width: '200px', height: 'auto' }} 
+            />
+          </div>
         </header>
 
         <section className="features-grid">
@@ -251,6 +258,14 @@ function App() {
           Welcome, <strong>{user.email}</strong>
         </p>
         <button className="cancel-btn" onClick={signOut}>Sign Out</button>
+      </div>
+
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <img 
+          src="ukulele-landing.png" 
+          alt="Ukulele" 
+          style={{ width: '120px', height: 'auto' }} 
+        />
       </div>
 
       <h1>Ukulele Song Builder</h1>
