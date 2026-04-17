@@ -33,6 +33,7 @@ function App() {
   const [chordsInput, setChordsInput] = useState("");
   const [strumming, setStrumming] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [bpm, setBpm] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [songs, setSongs] = useState([]);
@@ -110,6 +111,7 @@ function App() {
       chords_input: chordsInput,
       strumming,
       youtube_url: youtubeUrl,
+      bpm: bpm ? parseInt(bpm) : null,
       user_id: user.id,
     };
 
@@ -156,6 +158,7 @@ function App() {
     setChordsInput("");
     setStrumming("");
     setYoutubeUrl("");
+    setBpm("");
     setEditingId(null);
     setIsViewMode(false);
   }
@@ -169,6 +172,7 @@ function App() {
     setChordsInput(sampleSong);
     setStrumming("D-D-U-U-D-U");
     setYoutubeUrl("");
+    setBpm("90");
     setIsViewMode(false); // Let user see the edit view first
   }
 
@@ -181,6 +185,7 @@ function App() {
     setChordsInput(song.chords_input);
     setStrumming(song.strumming);
     setYoutubeUrl(song.youtube_url || "");
+    setBpm(song.bpm ? song.bpm.toString() : "");
     setIsViewMode(false); // ALWAYS open in EDIT MODE so user can update immediately
   }
 
@@ -308,6 +313,7 @@ function App() {
               chordsInput={chordsInput} 
               strumming={strumming} 
               youtubeUrl={youtubeUrl} 
+              bpm={bpm}
             />
           ) : (
             /* FORM */
@@ -341,12 +347,22 @@ function App() {
                 </div>
               )}
 
-              <input
-                type="text"
-                placeholder="Strumming Pattern (e.g. D-D-U-U-D-U)"
-                value={strumming}
-                onChange={(e) => setStrumming(e.target.value)}
-              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="text"
+                  placeholder="Strumming Pattern (e.g. D-D-U-U-D-U)"
+                  value={strumming}
+                  onChange={(e) => setStrumming(e.target.value)}
+                  style={{ flex: 2 }}
+                />
+                <input
+                  type="number"
+                  placeholder="BPM"
+                  value={bpm}
+                  onChange={(e) => setBpm(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+              </div>
 
               <input
                 type="url"
@@ -393,6 +409,7 @@ function App() {
 
                 <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", margin: "0" }}>
                   <strong>Strumming:</strong> {song.strumming || "—"}
+                  {song.bpm && ` | ${song.bpm} BPM`}
                 </p>
 
                 {song.youtube_url && (

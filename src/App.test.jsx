@@ -13,6 +13,7 @@ const mockSongs = [
     chords_input: '[C]Test lyrics',
     strumming: 'D-D-U',
     youtube_url: '',
+    bpm: 90,
     user_id: 'test-user-id'
   }
 ];
@@ -32,7 +33,7 @@ beforeEach(() => {
     }),
     update: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({ data: [{ ...mockSongs[0], youtube_url: 'https://youtube.com/test' }], error: null })
+        select: vi.fn().mockResolvedValue({ data: [{ ...mockSongs[0], youtube_url: 'https://youtube.com/test', bpm: 120 }], error: null })
       })
     }),
     insert: vi.fn().mockReturnThis(),
@@ -40,25 +41,26 @@ beforeEach(() => {
   }));
 });
 
-test('can load a song into the form and update it', async () => {
+test('can load a song into the form and update it including BPM', async () => {
   render(<App />);
 
   // Wait for the song to be loaded in the list
   const songTitle = await screen.findByText(/Test Song/i);
   expect(songTitle).toBeInTheDocument();
 
+  // Check if BPM is displayed in the list
+  expect(screen.getByText(/90 BPM/i)).toBeInTheDocument();
+
   // Click "Edit / Perform" to load it into the form
   const editButton = screen.getByText(/Edit \/ Perform/i);
   fireEvent.click(editButton);
 
-  // Check if it's in the form (Edit Mode should be default)
-  const titleInput = screen.getByDisplayValue('Test Song');
-  const youtubeInput = screen.getByPlaceholderText(/YouTube URL/i);
-  
-  expect(titleInput).toBeInTheDocument();
+  // Check if BPM is in the form
+  const bpmInput = screen.getByPlaceholderText(/BPM/i);
+  expect(bpmInput.value).toBe('90');
 
-  // Update the YouTube URL
-  fireEvent.change(youtubeInput, { target: { value: 'https://youtube.com/test' } });
+  // Update the BPM
+  fireEvent.change(bpmInput, { target: { value: '120' } });
 
   // Click Update Song
   const updateButton = screen.getByText(/Update Song/i);

@@ -3,7 +3,7 @@ import { parseSong } from "./utils/songParser";
 import ChordDiagram from "./ChordDiagram";
 import { chordShapes } from "./data/chords";
 
-const SongViewer = ({ title, chordsInput, strumming, youtubeUrl }) => {
+const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm }) => {
   const parsedLines = parseSong(chordsInput);
 
   // Extract unique chords to show diagrams at the top
@@ -15,11 +15,18 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl }) => {
     <div className="song-viewer">
       <div className="viewer-header">
         <h2>{title}</h2>
-        {strumming && (
-          <p className="viewer-strumming">
-            <strong>Strumming:</strong> {strumming}
-          </p>
-        )}
+        <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+          {strumming && (
+            <p className="viewer-strumming" style={{ margin: 0 }}>
+              <strong>Strumming:</strong> {strumming}
+            </p>
+          )}
+          {bpm && (
+            <p className="viewer-bpm" style={{ margin: 0 }}>
+              <strong>BPM:</strong> {bpm}
+            </p>
+          )}
+        </div>
         {youtubeUrl && (
           <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="viewer-youtube">
             📺 Watch on YouTube
