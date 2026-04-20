@@ -15,11 +15,9 @@ const sampleSong = `[C]Row, row, row your [G]boat
 // =============================
 function extractChords(text) {
   if (!text) return [];
-
-  const chordRegex = /\[([A-G](#|b)?(m|7)?)\]/g;
+  const chordRegex = /\[(.*?)\]/g;
   const matches = [...text.matchAll(chordRegex)];
-  const chords = matches.map(match => match[1]);
-
+  const chords = matches.map(match => match[1].trim());
   return [...new Set(chords)];
 }
 
@@ -34,11 +32,13 @@ function App() {
   const [strumming, setStrumming] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [bpm, setBpm] = useState("");
+  const [chordsUsed, setChordsUsed] = useState(""); // NEW FIELD
   const [editingId, setEditingId] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [songs, setSongs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Detect chords automatically
+  // Detect chords for diagrams based on the main text area
   const chords = extractChords(chordsInput);
 
   // =============================
@@ -95,7 +95,7 @@ function App() {
     if (error) {
       console.error(error);
     } else {
-      setSongs(data);
+      setSongs(data || []);
     }
   }
 
@@ -112,40 +112,29 @@ function App() {
       strumming,
       youtube_url: youtubeUrl,
       bpm: bpm ? parseInt(bpm) : null,
+      chords_used: chordsUsed, // SAVE TO DB
       user_id: user.id,
     };
 
     let error;
-    let result;
-
     if (editingId) {
-      console.log("Attempting to UPDATE song ID:", editingId);
-      const { data, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from("songs")
         .update(songData)
         .eq("id", editingId)
-        .select(); // .select() forces Supabase to return the updated row
-      
+        .select();
       error = updateError;
-      result = data;
-      console.log("Update result:", { data, error });
     } else {
-      console.log("Attempting to INSERT new song");
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("songs")
         .insert([songData])
         .select();
-      
       error = insertError;
-      result = data;
     }
 
     if (error) {
       console.error("Supabase Error:", error);
       alert("Error saving: " + error.message);
-    } else if (editingId && (!result || result.length === 0)) {
-      console.warn("Update successful but 0 rows were affected. Check RLS policies.");
-      alert("The update was successful, but no changes were saved. This usually happens if your Supabase 'Row Level Security' (RLS) policy doesn't allow UPDATES.");
     } else {
       alert(editingId ? "Song updated successfully! ✨" : "Song saved to library! 🎵");
       clearForm();
@@ -159,13 +148,11 @@ function App() {
     setStrumming("");
     setYoutubeUrl("");
     setBpm("");
+    setChordsUsed("");
     setEditingId(null);
     setIsViewMode(false);
   }
 
-  // =============================
-  // SAMPLE SONG
-  // =============================
   function loadSampleSong() {
     setEditingId(null);
     setTitle("Row Row Row Your Boat");
@@ -173,12 +160,10 @@ function App() {
     setStrumming("D-D-U-U-D-U");
     setYoutubeUrl("");
     setBpm("90");
-    setIsViewMode(false); // Let user see the edit view first
+    setChordsUsed("C, G, F");
+    setIsViewMode(false);
   }
 
-  // =============================
-  // LOAD SONG
-  // =============================
   function loadSong(song) {
     setEditingId(song.id);
     setTitle(song.title);
@@ -186,29 +171,35 @@ function App() {
     setStrumming(song.strumming);
     setYoutubeUrl(song.youtube_url || "");
     setBpm(song.bpm ? song.bpm.toString() : "");
-    setIsViewMode(false); // ALWAYS open in EDIT MODE so user can update immediately
+    setChordsUsed(song.chords_used || ""); // LOAD FROM DB
+    setIsViewMode(false);
   }
 
-  // =============================
-  // DELETE SONG
-  // =============================
   async function deleteSong(id) {
     if (!window.confirm("Are you sure you want to delete this song?")) return;
-
-    const { error } = await supabase
-      .from("songs")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      console.error(error);
-    } else {
-      fetchSongs();
-    }
+    const { error } = await supabase.from("songs").delete().eq("id", id);
+    if (!error) fetchSongs();
   }
 
   // =============================
-  // NOT LOGGED IN (Landing Page)
+  // FILTERED SONGS LOGIC
+  // =============================
+  const filteredSongs = songs.filter(song => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.trim().toLowerCase().replace(/[\[\]]/g, '');
+    
+    // 1. Search in the NEW "Chords Used" field (Strict Chord Search)
+    const matchesChordsUsed = (song.chords_used || "").toLowerCase().includes(query);
+
+    // 2. Fallback: Search in the raw text (Just in case)
+    const matchesRawText = (song.chords_input || "").toLowerCase().includes(query);
+    
+    return matchesChordsUsed || matchesRawText;
+  });
+
+  // =============================
+  // NOT LOGGED IN
   // =============================
   if (!user) {
     return (
@@ -217,37 +208,13 @@ function App() {
           <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
           <div className="ukulele-icon" style={{ marginTop: '20px' }}>
-            <img 
-              src="ukulele-landing.png" 
-              alt="Ukulele" 
-              style={{ width: '200px', height: 'auto' }} 
-            />
+            <img src="ukulele-landing.png" alt="Ukulele" style={{ width: '200px', height: 'auto' }} />
           </div>
         </header>
-
-        <section className="features-grid">
-          <div className="feature-item">
-            <div className="feature-icon">🎼</div>
-            <h3>Smart Chords</h3>
-            <p>Automatic chord detection and visual SVG diagrams for every song.</p>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">🎤</div>
-            <h3>Performance Mode</h3>
-            <p>Clean, distraction-free view with chords positioned perfectly above lyrics.</p>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">☁️</div>
-            <h3>Cloud Sync</h3>
-            <p>Save your entire song library and access it from any device.</p>
-          </div>
-        </section>
-
         <div className="login-section">
           <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}>
             Get Started with Google
           </button>
-          <p>Sign in to save your songs and access your library.</p>
         </div>
       </div>
     );
@@ -259,49 +226,20 @@ function App() {
   return (
     <div className="container">
       <div className="top-bar">
-        <p>
-          Welcome, <strong>{user.email}</strong>
-        </p>
+        <p>Welcome, <strong>{user.email}</strong></p>
         <button className="cancel-btn" onClick={signOut}>Sign Out</button>
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <img 
-          src="ukulele-landing.png" 
-          alt="Ukulele" 
-          style={{ width: '120px', height: 'auto' }} 
-        />
+        <img src="ukulele-landing.png" alt="Ukulele" style={{ width: '120px', height: 'auto' }} />
       </div>
 
       <h1>Ukulele Song Builder</h1>
 
-      {/* VIEW / EDIT TOGGLE (only when a song is being worked on) */}
       {(editingId || (title && chordsInput)) && (
         <div className="view-toggle">
-          <button 
-            className={`toggle-btn ${!isViewMode ? 'active' : ''}`}
-            onClick={() => setIsViewMode(false)}
-          >
-            Edit Mode
-          </button>
-          <button 
-            className={`toggle-btn ${isViewMode ? 'active' : ''}`}
-            onClick={() => setIsViewMode(true)}
-          >
-            Performance Mode
-          </button>
-        </div>
-      )}
-
-      {!editingId && !title && !chordsInput && (
-        <div className="sample-option" style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={loadSampleSong}
-          >
-            Load Sample Song
-          </button>
+          <button className={`toggle-btn ${!isViewMode ? 'active' : ''}`} onClick={() => setIsViewMode(false)}>Edit Mode</button>
+          <button className={`toggle-btn ${isViewMode ? 'active' : ''}`} onClick={() => setIsViewMode(true)}>Performance Mode</button>
         </div>
       )}
 
@@ -313,123 +251,89 @@ function App() {
               chordsInput={chordsInput} 
               strumming={strumming} 
               youtubeUrl={youtubeUrl} 
-              bpm={bpm}
+              bpm={bpm} 
+              chordsUsed={chordsUsed}
             />
           ) : (
-            /* FORM */
             <form onSubmit={handleSubmit} className="song-form">
               <h2>{editingId ? "Edit Song" : "Create New Song"}</h2>
-
-              <input
-                type="text"
-                placeholder="Song Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
+              
+              <input 
+                type="text" 
+                placeholder="Song Title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                required 
               />
 
-              <textarea
-                placeholder="Chords / Lyrics (e.g. [C]Row your boat)"
-                value={chordsInput}
-                onChange={(e) => setChordsInput(e.target.value)}
-                required
+              <textarea 
+                placeholder="Lyrics (put chords in brackets, e.g. [C]Row your boat)" 
+                value={chordsInput} 
+                onChange={(e) => setChordsInput(e.target.value)} 
+                required 
+              />
+
+              {/* NEW CHORDS USED FIELD */}
+              <input 
+                type="text" 
+                placeholder="Chords Used (e.g. C, G, Am, F)" 
+                value={chordsUsed} 
+                onChange={(e) => setChordsUsed(e.target.value)} 
               />
 
               {chords.length > 0 && (
                 <div className="chord-diagrams">
                   {chords.map((chord) => (
-                    <ChordDiagram
-                      key={chord}
-                      chord={chord}
-                      shape={chordShapes[chord]}
-                    />
+                    <ChordDiagram key={chord} chord={chord} shape={chordShapes[chord]} />
                   ))}
                 </div>
               )}
 
               <div style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  placeholder="Strumming Pattern (e.g. D-D-U-U-D-U)"
-                  value={strumming}
-                  onChange={(e) => setStrumming(e.target.value)}
-                  style={{ flex: 2 }}
-                />
-                <input
-                  type="number"
-                  placeholder="BPM"
-                  value={bpm}
-                  onChange={(e) => setBpm(e.target.value)}
-                  style={{ flex: 1 }}
-                />
+                <input type="text" placeholder="Strumming Pattern" value={strumming} onChange={(e) => setStrumming(e.target.value)} style={{ flex: 2 }} />
+                <input type="number" placeholder="BPM" value={bpm} onChange={(e) => setBpm(e.target.value)} style={{ flex: 1 }} />
               </div>
 
-              <input
-                type="url"
-                placeholder="YouTube URL (optional)"
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-              />
+              <input type="url" placeholder="YouTube URL" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
 
               <div className="form-actions">
-                <button type="submit" className="primary-btn">
-                  {editingId ? "Update Song" : "Save Song"}
-                </button>
+                <button type="submit" className="primary-btn">{editingId ? "Update Song" : "Save Song"}</button>
                 {(editingId || title || chordsInput) && (
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={clearForm}
-                  >
-                    Clear / Cancel
-                  </button>
+                  <button type="button" className="cancel-btn" onClick={clearForm}>Clear / Cancel</button>
                 )}
               </div>
             </form>
           )}
         </div>
 
-        {/* SONG LIST */}
         <div className="song-list">
           <h2>Your Library</h2>
+          
+          <div className="search-box" style={{ marginBottom: '20px' }}>
+            <input 
+              type="text" 
+              placeholder="Search by chord (e.g. G)" 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              style={{ width: '100%', boxSizing: 'border-box' }} 
+            />
+          </div>
 
-          {songs.length === 0 ? (
-            <p style={{ color: "var(--text-muted)", textAlign: "center", padding: "1rem" }}>
-              Your library is empty. Add your first song!
-            </p>
+          {filteredSongs.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", textAlign: "center", padding: "1rem" }}>No matches found 🔍</p>
           ) : (
-            songs.map((song) => (
+            filteredSongs.map((song) => (
               <div key={song.id} className="song-card">
-                <h3
-                  className="clickable"
-                  onClick={() => loadSong(song)}
-                >
-                  {song.title}
-                </h3>
-
-                <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", margin: "0" }}>
-                  <strong>Strumming:</strong> {song.strumming || "—"}
-                  {song.bpm && ` | ${song.bpm} BPM`}
+                <h3 className="clickable" onClick={() => loadSong(song)}>{song.title}</h3>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}>
+                  <strong>Chords:</strong> {song.chords_used || "—"}
                 </p>
-
-                {song.youtube_url && (
-                  <p style={{ fontSize: "0.85rem", margin: "5px 0 0 0" }}>
-                    <a href={song.youtube_url} target="_blank" rel="noopener noreferrer" className="clickable">
-                      📺 Watch on YouTube
-                    </a>
-                  </p>
-                )}
-
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}>
+                  <strong>Style:</strong> {song.strumming || "—"} {song.bpm && ` | ${song.bpm} BPM`}
+                </p>
                 <div className="song-actions">
-                  <button className="secondary-btn" onClick={() => loadSong(song)}>
-                    Edit / Perform
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteSong(song.id)}
-                  >
-                    Delete
-                  </button>
+                  <button className="secondary-btn" onClick={() => loadSong(song)}>Edit</button>
+                  <button className="delete-btn" onClick={() => deleteSong(song.id)}>Delete</button>
                 </div>
               </div>
             ))
