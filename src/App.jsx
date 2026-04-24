@@ -208,11 +208,11 @@ function App() {
           <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
           
-          <div className="doc-links" style={{ marginBottom: '20px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/PRD.md" target="_blank" rel="noopener noreferrer" className="clickable" style={{ fontSize: '0.9rem' }}>
-              📄 Product Roadmap (PRD)
+          <div className="doc-links">
+            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/PRD.md" target="_blank" rel="noopener noreferrer" className="doc-pill">
+              📄 Product Roadmap
             </a>
-            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer" className="clickable" style={{ fontSize: '0.9rem' }}>
+            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer" className="doc-pill">
               📖 User Guide
             </a>
           </div>
