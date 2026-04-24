@@ -7,7 +7,7 @@
 ---
 
 ## 1. Executive Summary
-The **Ukulele App** is a cloud-synced digital songbook designed for ukulele players. It solves the problem of messy paper tabs and static lyrics by providing a "Smart" editor that automatically visualizes chords and a dedicated "Performance Mode" for distraction-free playing.
+The **Ukulele App** is a cloud-synced digital songbook designed for ukulele players. It solves the problem of disorganized paper tabs and static lyrics by providing a "Smart" editor that automatically visualizes chords and a dedicated "Performance Mode" for distraction-free playing.
 
 ---
 
