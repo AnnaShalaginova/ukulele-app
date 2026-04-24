@@ -3,6 +3,7 @@
 **Version:** 1.0  
 **Status:** MVP (Minimum Viable Product) Complete  
 **Owner:** Anna Shalaginova  
+**Link to the app:**https://ukulele-app.vercel.app/
 
 ---
 
