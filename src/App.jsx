@@ -207,6 +207,16 @@ function App() {
         <header className="hero">
           <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
+          
+          <div className="doc-links" style={{ marginBottom: '20px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/PRD.md" target="_blank" rel="noopener noreferrer" className="clickable" style={{ fontSize: '0.9rem' }}>
+              📄 Product Roadmap (PRD)
+            </a>
+            <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer" className="clickable" style={{ fontSize: '0.9rem' }}>
+              📖 User Guide
+            </a>
+          </div>
+
           <div className="ukulele-icon" style={{ marginTop: '20px' }}>
             <img src="ukulele-landing.png" alt="Ukulele" style={{ width: '200px', height: 'auto' }} />
           </div>
