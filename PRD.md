@@ -41,6 +41,9 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 *   **Strict Chord Search:** Allows users to filter their entire library by specific chords (e.g., "Find all songs with Am7").
 *   **Responsive UI:** Optimized for both desktop (side-by-side) and mobile (stacked) views.
 
+### 3.5 Musician Tools
+*   **Transposer:** A utility to shift the key of a song (+/- semitones) automatically in Performance Mode. (Implemented)
+
 ---
 
 ## 4. Technical Stack
@@ -60,7 +63,6 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 ---
 
 ## 6. Future Roadmap (v2.0)
-*   **Transposer:** A utility to shift the key of a song (+/- semitones) automatically.
 *   **Auto-Scroll:** Hands-free vertical scrolling based on the song's BPM and length.
 *   **Setlists:** Ability to group songs into "Gig Lists" or "Practice Folders."
 *   **Offline Mode:** PWA (Progressive Web App) support for playing without an internet connection.
