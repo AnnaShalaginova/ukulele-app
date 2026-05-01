@@ -30,10 +30,13 @@ body {
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   padding: 2rem;
   box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 600px) {
@@ -86,9 +89,23 @@ h1 {
 /* Main Layout */
 .main-layout {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr 380px;
   gap: 2rem;
   align-items: start;
+  flex: 1;
+}
+
+@media (min-width: 1025px) {
+  .main-layout {
+    height: calc(100vh - 280px);
+    overflow: hidden;
+  }
+  
+  .content-area, .song-list {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 15px;
+  }
 }
 
 @media (max-width: 1024px) {
