@@ -74,3 +74,21 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 *   **Retention:** Users return to the app to view their saved songs during practice.
 *   **Library Growth:** Number of songs added per user.
 *   **Mobile Usage:** Percentage of users accessing the app via mobile devices during performance.
+
+---
+
+## 8. Testing Strategy
+The application maintains high reliability through a three-layered testing suite:
+
+### 8.1 Logic Testing
+*   **Transposer Validation:** Ensures musical accuracy when shifting keys (e.g., handling chromatic wraps, preserving chord suffixes like `m7` or `maj7`).
+*   **Parser Accuracy:** Validates that the bracket notation `[Chord]` is correctly separated from lyrics.
+
+### 8.2 Component Testing
+*   **Chord Diagrams:** Verifies that SVG fretboard diagrams render correctly with accurate string/fret positions.
+*   **Resilience:** Ensures the UI handles missing chord shapes gracefully without crashing.
+
+### 8.3 Integration & UI Testing
+*   **User Workflows:** Simulates full cycles of creating, saving, editing, and deleting songs.
+*   **Persistence:** Confirms that the frontend correctly communicates with the Supabase database.
+*   **Performance Mode:** Verifies real-time UI updates, such as the transposer buttons correctly updating all chord labels and diagrams simultaneously.
