@@ -208,6 +208,13 @@ function App() {
           <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
           
+          <div className="login-section" style={{ margin: '20px 0' }}>
+            <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}>
+              Get Started with Google
+            </button>
+            <p>Sign in to save your songs and access your library.</p>
+          </div>
+
           <div className="doc-links">
             <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/PRD.md" target="_blank" rel="noopener noreferrer" className="doc-pill">
               📄 Product Roadmap
@@ -239,13 +246,6 @@ function App() {
             <p>Save your entire song library and access it from any device.</p>
           </div>
         </section>
-
-        <div className="login-section">
-          <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}>
-            Get Started with Google
-          </button>
-          <p>Sign in to save your songs and access your library.</p>
-        </div>
       </div>
     );
   }
