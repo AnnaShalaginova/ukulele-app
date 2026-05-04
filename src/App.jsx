@@ -204,12 +204,16 @@ function App() {
   if (!user) {
     return (
       <div className="container landing-page">
+        <div className="ukulele-icon">
+          <img src="ukulele-landing.png" alt="Ukulele" />
+        </div>
+
         <header className="hero">
           <h1>Ukulele App</h1>
           <p>Create, manage, and perform your favorite ukulele songs with ease.</p>
           
-          <div className="login-section" style={{ margin: '20px 0' }}>
-            <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}>
+          <div className="login-section">
+            <button className="secondary-btn" onClick={signInWithGoogle}>
               Get Started with Google
             </button>
             <p>Sign in to save your songs and access your library.</p>
@@ -222,10 +226,6 @@ function App() {
             <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer" className="doc-pill">
               📖 User Guide
             </a>
-          </div>
-
-          <div className="ukulele-icon" style={{ marginTop: '20px' }}>
-            <img src="ukulele-landing.png" alt="Ukulele" style={{ width: '200px', height: 'auto' }} />
           </div>
         </header>
 

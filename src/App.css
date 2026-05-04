@@ -499,35 +499,35 @@ button {
   box-shadow: none;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative; /* Base for absolute child */
 }
 
-.hero h1 {
-  font-size: 3.5rem;
-  margin-bottom: 0.25rem;
-  background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 2.2rem;
-  }
-  .ukulele-icon img {
-    width: 100px !important;
-  }
+.hero {
+  position: relative;
+  z-index: 2; /* Content above background */
 }
 
 .ukulele-icon {
-  margin-bottom: 0.5rem;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
-  animation: float 4s ease-in-out infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  opacity: 0.15; /* Faded background look */
+  pointer-events: none; /* Don't block clicks */
+  margin: 0;
+  filter: grayscale(20%) blur(1px);
 }
 
 .ukulele-icon img {
-  width: 120px;
+  width: 500px;
   height: auto;
+}
+
+@media (max-width: 600px) {
+  .ukulele-icon img {
+    width: 300px;
+  }
 }
 
 @keyframes float {
