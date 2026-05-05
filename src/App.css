@@ -481,6 +481,36 @@ button {
   border-color: var(--secondary-color);
 }
 
+/* Shared Song Overlay */
+.shared-song-overlay {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(52, 152, 219, 0.05);
+  border-radius: var(--radius);
+  border: 2px solid var(--secondary-color);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.shared-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.shared-header span {
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.shared-divider {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  opacity: 0.3;
+}
+
 /* Landing Page */
 .landing-page {
   display: flex;

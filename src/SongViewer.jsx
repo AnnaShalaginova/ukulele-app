@@ -4,8 +4,9 @@ import ChordDiagram from "./ChordDiagram";
 import { chordShapes } from "./data/chords";
 import { transposeChord } from "./utils/transposer";
 
-const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm }) => {
+const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) => {
   const [transpose, setTranspose] = useState(0);
+  const [isCopying, setIsCopying] = useState(false);
   const parsedLines = parseSong(chordsInput);
 
   // Extract unique chords to show diagrams at the top
@@ -21,10 +22,29 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm }) => {
     setTranspose(0);
   };
 
+  const handleShare = async () => {
+    if (!songId) return;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${songId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopying(true);
+      setTimeout(() => setIsCopying(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
+
   return (
     <div className="song-viewer">
       <div className="viewer-header">
-        <h2>{title}</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <h2>{title}</h2>
+          {songId && (
+            <button className="doc-pill" onClick={handleShare} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+              {isCopying ? "✅ Copied!" : "🔗 Share Link"}
+            </button>
+          )}
+        </div>
         <div className="viewer-controls" style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span>Transpose:</span>
           <button className="secondary-btn" onClick={() => handleTranspose(-1)}>-1</button>
