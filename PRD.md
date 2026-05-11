@@ -43,6 +43,7 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 
 ### 3.5 Musician Tools
 *   **Transposer:** A utility to shift the key of a song (+/- semitones) automatically in Performance Mode. (Implemented)
+*   **Song Sharing:** Unique shareable links that allow anyone to view a song's lyrics and chords without needing to log in. (Implemented)
 
 ---
 

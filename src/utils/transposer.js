@@ -5,6 +5,10 @@ export function transposeChord(chord, semitones) {
   if (!chord) return chord;
   if (semitones === 0) return chord;
 
+  if (chord.includes(' ')) {
+    return chord.split(' ').map(c => transposeChord(c, semitones)).join(' ');
+  }
+
   // Extract root and suffix
   // Handles roots like C, C#, Db, F#, etc.
   const rootMatch = chord.match(/^([A-G][#b]?)(.*)/);

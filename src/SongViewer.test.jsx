@@ -34,3 +34,27 @@ test('transposes chords in SongViewer when buttons are clicked', () => {
   expect(screen.getAllByText('C').length).toBeGreaterThan(0);
   expect(screen.getAllByText('G').length).toBeGreaterThan(0);
 });
+
+test('handles multiple chords in one measure', () => {
+  const songProps = {
+    title: 'Multi Chord Song',
+    chordsInput: '[C G]Hello',
+    strumming: '',
+    youtubeUrl: '',
+    bpm: ''
+  };
+
+  render(<SongViewer {...songProps} />);
+
+  // Should show both chords in the text
+  expect(screen.getByText('C G')).toBeDefined();
+
+  // Diagrams section should show both C and G titles
+  // We use getAllByText because 'C' and 'G' might appear in the lyrics too if we are not careful
+  // But here 'Hello' doesn't contain C or G.
+  // Actually, 'C' and 'G' will be in the chord diagrams as titles (h4).
+  const chordTitles = screen.getAllByRole('heading', { level: 4 });
+  const titles = chordTitles.map(t => t.textContent);
+  expect(titles).toContain('C');
+  expect(titles).toContain('G');
+});

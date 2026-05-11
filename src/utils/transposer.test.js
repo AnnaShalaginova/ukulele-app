@@ -40,3 +40,7 @@ test('handles flat chords like Eb', () => {
 test('wraps around correctly with negative transposition', () => {
   expect(transposeChord('C', -1)).toBe('B');
 });
+
+test('handles multiple chords separated by space', () => {
+  expect(transposeChord('C G', 1)).toBe('C# G#');
+});

@@ -12,7 +12,7 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) 
   // Extract unique chords to show diagrams at the top
   const chordRegex = /\[(.*?)\]/g;
   const matches = [...chordsInput.matchAll(chordRegex)];
-  const uniqueChords = [...new Set(matches.map(m => m[1]))];
+  const uniqueChords = [...new Set(matches.flatMap(m => m[1].split(/\s+/)).filter(c => c))];
 
   const handleTranspose = (amount) => {
     setTranspose(prev => prev + amount);

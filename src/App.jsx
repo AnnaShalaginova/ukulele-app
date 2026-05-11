@@ -17,7 +17,7 @@ function extractChords(text) {
   if (!text) return [];
   const chordRegex = /\[(.*?)\]/g;
   const matches = [...text.matchAll(chordRegex)];
-  const chords = matches.map(match => match[1].trim());
+  const chords = matches.flatMap(match => match[1].split(/\s+/)).filter(c => c);
   return [...new Set(chords)];
 }
 
