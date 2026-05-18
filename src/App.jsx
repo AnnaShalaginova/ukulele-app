@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import ChordDiagram from "./ChordDiagram";
 import SongViewer from "./SongViewer";
+import ContactForm from "./ContactForm";
 import { chordShapes } from "./data/chords";
 import "./App.css";
 
@@ -294,6 +295,8 @@ function App() {
               <p>Save your entire song library and access it from any device.</p>
             </div>
           </section>
+
+          <ContactForm />
         </div>
       ) : (
         /* MAIN APP (LOGGED IN) */
