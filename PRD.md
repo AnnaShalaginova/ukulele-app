@@ -45,11 +45,18 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 *   **Transposer:** A utility to shift the key of a song (+/- semitones) automatically in Performance Mode. (Implemented)
 *   **Song Sharing:** Unique shareable links that allow anyone to view a song's lyrics and chords without needing to log in. (Implemented)
 
+### 3.6 Contact & Feedback
+*   **Anonymous Feedback:** A contact form on the landing page allowing users to send suggestions or bug reports.
+*   **Edge Functions:** Powered by Supabase Edge Functions (Deno) for secure server-side processing.
+*   **Email Integration:** Integrated with Resend API for reliable email delivery to the administrator.
+
 ---
 
 ## 4. Technical Stack
 *   **Frontend:** React 19 + Vite (JavaScript).
 *   **Backend/Database:** Supabase (PostgreSQL + Auth).
+*   **Serverless:** Supabase Edge Functions (Deno).
+*   **Email:** Resend API.
 *   **Styling:** Vanilla CSS with custom variables and Media Queries.
 *   **Testing:** Vitest + React Testing Library (Unit & Integration tests).
 *   **Deployment:** Vercel (CI/CD via GitHub).
