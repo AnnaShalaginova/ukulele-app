@@ -20,6 +20,7 @@ const ContactForm = () => {
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error.message || "Failed to send email via Resend");
 
       setStatus({ type: "success", msg: "Message sent successfully! 🚀" });
       setName("");

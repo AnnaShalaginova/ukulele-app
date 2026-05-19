@@ -26,7 +26,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Ukulele App <onboarding@resend.dev>', // You can use a custom domain later
+        from: 'Ukulele App <onboarding@resend.dev>',
         to: [CONTACT_EMAIL],
         subject: `New Message from ${name}`,
         html: `
@@ -40,15 +40,15 @@ serve(async (req) => {
       }),
     })
 
-    const data = await res.json()
+    const responseData = await res.json()
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
+    return new Response(JSON.stringify(responseData), {
+      status: res.status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+      status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

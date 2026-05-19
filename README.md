@@ -1,4 +1,24 @@
-# React + Vite
+## 🛠️ Deployment Notes
+
+### Contact Form (Supabase Edge Functions)
+To make the contact form work in production, you must deploy the edge function and set the required secrets.
+
+1.  **Install Supabase CLI:** `brew install supabase/tap/supabase` (on macOS)
+2.  **Login:** `supabase login`
+3.  **Link Project:** `supabase link --project-ref your-project-ref`
+4.  **Set Secrets:**
+    ```bash
+    supabase secrets set RESEND_API_KEY=re_your_api_key
+    supabase secrets set CONTACT_EMAIL=your-email@example.com
+    ```
+5.  **Deploy Function:**
+    ```bash
+    supabase functions deploy send-contact-email
+    ```
+
+---
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
