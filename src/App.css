@@ -499,6 +499,20 @@ button {
   margin-bottom: 20px;
 }
 
+@media (max-width: 600px) {
+  .shared-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .shared-header div {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+}
+
 .shared-header span {
   font-weight: bold;
   color: var(--secondary-color);

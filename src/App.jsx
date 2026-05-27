@@ -68,6 +68,33 @@ function App() {
     }
   }
 
+  async function saveSharedSong() {
+    if (!user) {
+      alert("Please sign in to save this song to your library!");
+      return;
+    }
+
+    const songData = {
+      title: sharedSong.title,
+      chords_input: sharedSong.chords_input,
+      strumming: sharedSong.strumming,
+      youtube_url: sharedSong.youtube_url,
+      bpm: sharedSong.bpm,
+      chords_used: sharedSong.chords_used,
+      user_id: user.id,
+    };
+
+    const { error } = await supabase.from("songs").insert([songData]);
+
+    if (error) {
+      alert("Error cloning song: " + error.message);
+    } else {
+      alert("Song added to your library! 🎶");
+      fetchSongs();
+      closeSharedSong();
+    }
+  }
+
   function closeSharedSong() {
     setSharedSong(null);
     window.history.pushState({}, document.title, window.location.pathname);
@@ -235,7 +262,18 @@ function App() {
       {sharedSong && (
         <div className="shared-song-overlay">
           <div className="shared-header">
-            <span>📖 Viewing Shared Song</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <span>📖 Viewing Shared Song</span>
+              {user ? (
+                <button className="primary-btn" onClick={saveSharedSong} style={{ padding: '5px 15px', fontSize: '0.9rem' }}>
+                  Save to My Library
+                </button>
+              ) : (
+                <button className="secondary-btn" onClick={signInWithGoogle} style={{ padding: '5px 15px', fontSize: '0.9rem' }}>
+                  Sign in to Save
+                </button>
+              )}
+            </div>
             <button className="cancel-btn" onClick={closeSharedSong}>Close Shared Song</button>
           </div>
           <SongViewer 
