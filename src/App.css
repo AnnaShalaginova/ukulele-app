@@ -431,6 +431,16 @@ button {
   flex-wrap: wrap;
 }
 
+.viewer-section-header {
+  font-weight: 800;
+  color: var(--secondary-color);
+  font-size: 1.4rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.2rem;
+}
+
 .viewer-segment {
   position: relative;
   display: inline-flex;

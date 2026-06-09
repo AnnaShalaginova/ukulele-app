@@ -58,7 +58,7 @@ test('can load a song into the form and update it including BPM and Chords', asy
   fireEvent.click(editButton);
 
   // Check if fields are in the form
-  const chordsUsedInput = screen.getByPlaceholderText(/Chords Used/i);
+  const chordsUsedInput = screen.getByPlaceholderText(/Chords & Structure/i);
   expect(chordsUsedInput.value).toBe('C, G');
 
   // Update the Chords

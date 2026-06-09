@@ -1,7 +1,8 @@
 /**
  * Parses a song string in the format "[C]Lyrics" into structured data.
- * Returns an array of lines, where each line is an array of segments.
- * Each segment has a 'chord' (optional) and 'text'.
+ * Returns an array of lines, where each line is either:
+ * - A section header: { isSectionHeader: true, text: "Verse" }
+ * - A normal line: { isSectionHeader: false, segments: [{ chord: 'C', text: 'Lyrics' }] }
  */
 export function parseSong(text) {
   if (!text) return [];
@@ -9,6 +10,17 @@ export function parseSong(text) {
   const lines = text.split("\n");
   
   return lines.map(line => {
+    const trimmedLine = line.trim();
+    
+    // Check if the entire line is just a section tag like [Verse] or [Verse 1]
+    const sectionMatch = trimmedLine.match(/^\[(.*?)\]$/);
+    if (sectionMatch) {
+      return {
+        isSectionHeader: true,
+        text: sectionMatch[1]
+      };
+    }
+
     const segments = [];
     const regex = /\[(.*?)\]/g;
     let lastIndex = 0;
@@ -43,6 +55,9 @@ export function parseSong(text) {
       segments.push({ chord: null, text: line });
     }
 
-    return segments;
+    return {
+      isSectionHeader: false,
+      segments
+    };
   });
 }

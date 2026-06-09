@@ -3,6 +3,7 @@ import { parseSong } from "./utils/songParser";
 import ChordDiagram from "./ChordDiagram";
 import { chordShapes } from "./data/chords";
 import { transposeChord } from "./utils/transposer";
+import { SECTION_TAGS } from "./App";
 
 const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) => {
   const [transpose, setTranspose] = useState(0);
@@ -12,7 +13,13 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) 
   // Extract unique chords to show diagrams at the top
   const chordRegex = /\[(.*?)\]/g;
   const matches = [...chordsInput.matchAll(chordRegex)];
-  const uniqueChords = [...new Set(matches.flatMap(m => m[1].split(/\s+/)).filter(c => c))];
+  const uniqueChords = [...new Set(matches.flatMap(m => m[1].split(/\s+/)).filter(c => {
+    if (!c) return false;
+    const isSection = SECTION_TAGS.some(tag => 
+      c.toLowerCase().startsWith(tag.toLowerCase())
+    );
+    return !isSection;
+  }))];
 
   const handleTranspose = (amount) => {
     setTranspose(prev => prev + amount);
@@ -85,20 +92,30 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) 
 
       {/* LYRICS & CHORDS SECTION */}
       <div className="viewer-content">
-        {parsedLines.map((line, lineIndex) => (
-          <div key={lineIndex} className="viewer-line">
-            {line.map((segment, segIndex) => (
-              <span key={segIndex} className="viewer-segment">
-                {segment.chord && (
-                  <span className="viewer-chord">
-                    {transposeChord(segment.chord, transpose)}
-                  </span>
-                )}
-                <span className="viewer-text">{segment.text || "\u00A0"}</span>
-              </span>
-            ))}
-          </div>
-        ))}
+        {parsedLines.map((line, lineIndex) => {
+          if (line.isSectionHeader) {
+            return (
+              <div key={lineIndex} className="viewer-section-header">
+                {line.text}
+              </div>
+            );
+          }
+
+          return (
+            <div key={lineIndex} className="viewer-line">
+              {line.segments.map((segment, segIndex) => (
+                <span key={segIndex} className="viewer-segment">
+                  {segment.chord && (
+                    <span className="viewer-chord">
+                      {transposeChord(segment.chord, transpose)}
+                    </span>
+                  )}
+                  <span className="viewer-text">{segment.text || "\u00A0"}</span>
+                </span>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

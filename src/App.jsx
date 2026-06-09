@@ -11,6 +11,8 @@ const sampleSong = `[C]Row, row, row your [G]boat
 [C]Merrily, merrily, [F]merrily, merrily
 [C]Life is but a [G]dream`;
 
+export const SECTION_TAGS = ['Intro', 'Verse', 'Chorus', 'Bridge', 'Outro', 'Solo', 'Interlude'];
+
 // =============================
 // EXTRACT CHORDS FROM TEXT
 // =============================
@@ -18,7 +20,14 @@ function extractChords(text) {
   if (!text) return [];
   const chordRegex = /\[(.*?)\]/g;
   const matches = [...text.matchAll(chordRegex)];
-  const chords = matches.flatMap(match => match[1].split(/\s+/)).filter(c => c);
+  const chords = matches.flatMap(match => match[1].split(/\s+/)).filter(c => {
+    if (!c) return false;
+    // Filter out section tags (case-insensitive)
+    const isSection = SECTION_TAGS.some(tag => 
+      c.toLowerCase().startsWith(tag.toLowerCase())
+    );
+    return !isSection;
+  });
   return [...new Set(chords)];
 }
 
@@ -372,8 +381,24 @@ function App() {
                 <form onSubmit={handleSubmit} className="song-form">
                   <h2>{editingId ? "Edit Song" : "Create New Song"}</h2>
                   <input type="text" placeholder="Song Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                  <textarea placeholder="Lyrics (put chords in brackets, e.g. [C]Row your boat)" value={chordsInput} onChange={(e) => setChordsInput(e.target.value)} required />
-                  <input type="text" placeholder="Chords Used (e.g. C, G, Am, F)" value={chordsUsed} onChange={(e) => setChordsUsed(e.target.value)} />
+                  <textarea 
+                    placeholder="Lyrics & Chords. Use [Verse], [Chorus], etc. on their own lines to create sections.
+Example:
+[Intro]
+[C] [G]
+
+[Verse]
+[C]Row your boat..." 
+                    value={chordsInput} 
+                    onChange={(e) => setChordsInput(e.target.value)} 
+                    required 
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Chords & Structure (e.g. Intro: C, G | Verse: C, F, G)" 
+                    value={chordsUsed} 
+                    onChange={(e) => setChordsUsed(e.target.value)} 
+                  />
                   {chords.length > 0 && (
                     <div className="chord-diagrams">
                       {chords.map((chord) => (
@@ -407,7 +432,7 @@ function App() {
                 filteredSongs.map((song) => (
                   <div key={song.id} className="song-card">
                     <h3 className="clickable" onClick={() => loadSong(song)}>{song.title}</h3>
-                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}><strong>Chords:</strong> {song.chords_used || "—"}</p>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}><strong>Chords / Structure:</strong> {song.chords_used || "—"}</p>
                     <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}><strong>Style:</strong> {song.strumming || "—"} {song.bpm && ` | ${song.bpm} BPM`}</p>
                     <div className="song-actions">
                       <button className="secondary-btn" onClick={() => loadSong(song)}>Edit</button>
