@@ -29,11 +29,13 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 ### 3.2 Smart Song Builder
 *   **Bracket Notation:** Supports `[Chord]Text` format for precise chord placement.
 *   **Automatic Chord Detection:** Scans lyrics for brackets and generates SVG fretboard diagrams in real-time.
+*   **Song Part Division:** Supports section headers like `[Intro]`, `[Verse]`, `[Chorus]`, etc., on their own lines for professional visual structure.
 *   **Rich Metadata:** Fields for Strumming Pattern, BPM, and YouTube reference links.
-*   **Strict Chord Tagging:** A dedicated "Chords Used" field for high-accuracy searching.
+*   **Chords & Structure Field:** A dedicated field for high-accuracy searching and quick "at-a-glance" song roadmaps.
 
 ### 3.3 Performance Mode
 *   **Parser Logic:** A custom utility that splits chords from lyrics and renders them in a vertically stacked layout.
+*   **Section Headers:** Automatically detects and styles song parts (Verse, Chorus, etc.) with bold headers and separator lines for easier navigation.
 *   **Visual Hierarchy:** Chords are styled in a distinct color (Secondary Blue) and positioned above syllables.
 *   **Metadata Header:** Displays BPM, Style, and YouTube link at the top of the performance sheet.
 
@@ -91,6 +93,7 @@ The application maintains high reliability through a three-layered testing suite
 ### 8.1 Logic Testing
 *   **Transposer Validation:** Ensures musical accuracy when shifting keys (e.g., handling chromatic wraps, preserving chord suffixes like `m7` or `maj7`).
 *   **Parser Accuracy:** Validates that the bracket notation `[Chord]` is correctly separated from lyrics.
+*   **Section Header Logic:** Ensures that tags like `[Verse]` on their own line are correctly identified as structural headers and excluded from the playable chord list.
 
 ### 8.2 Component Testing
 *   **Chord Diagrams:** Verifies that SVG fretboard diagrams render correctly with accurate string/fret positions.
