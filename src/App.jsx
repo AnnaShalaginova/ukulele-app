@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { track } from "@vercel/analytics";
 import { supabase } from "./supabase";
 import ChordDiagram from "./ChordDiagram";
 import SongViewer from "./SongViewer";
@@ -98,6 +99,7 @@ function App() {
     if (error) {
       alert("Error cloning song: " + error.message);
     } else {
+      track('shared_song_cloned', { title: sharedSong.title });
       alert("Song added to your library! 🎶");
       fetchSongs();
       closeSharedSong();
@@ -135,6 +137,7 @@ function App() {
   }, [user]);
 
   async function signInWithGoogle() {
+    track('google_signin_clicked');
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -204,6 +207,7 @@ function App() {
       console.error("Supabase Error:", error);
       alert("Error saving: " + error.message);
     } else {
+      track(editingId ? 'song_updated' : 'song_created', { title });
       alert(editingId ? "Song updated successfully! ✨" : "Song saved to library! 🎵");
       clearForm();
       fetchSongs();

@@ -52,6 +52,11 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 *   **Edge Functions:** Powered by Supabase Edge Functions (Deno) for secure server-side processing.
 *   **Email Integration:** Integrated with Resend API for reliable email delivery to the administrator.
 
+### 3.7 Analytics & Event Tracking
+*   **Custom Event Tracking:** Integrated via Vercel Analytics to monitor user engagement.
+*   **Key Metrics:** Tracking song creation/updates, share link usage, key transpositions, and authentication starts.
+*   **Data-Driven Design:** Using event frequency to prioritize roadmap features like auto-scroll or setlists.
+
 ---
 
 ## 4. Technical Stack
@@ -83,6 +88,7 @@ The **Ukulele App** is a cloud-synced digital songbook designed for ukulele play
 ## 7. Success Metrics
 *   **Retention:** Users return to the app to view their saved songs during practice.
 *   **Library Growth:** Number of songs added per user.
+*   **Feature Adoption:** High usage of advanced features like song parts (headers), the transposer, and sharing links, as measured by custom event tracking.
 *   **Mobile Usage:** Percentage of users accessing the app via mobile devices during performance.
 
 ---

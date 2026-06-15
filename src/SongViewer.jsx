@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { track } from "@vercel/analytics";
 import { parseSong } from "./utils/songParser";
 import ChordDiagram from "./ChordDiagram";
 import { chordShapes } from "./data/chords";
@@ -22,6 +23,7 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) 
   }))];
 
   const handleTranspose = (amount) => {
+    track('song_transposed', { amount });
     setTranspose(prev => prev + amount);
   };
 
@@ -31,6 +33,7 @@ const SongViewer = ({ title, chordsInput, strumming, youtubeUrl, bpm, songId }) 
 
   const handleShare = async () => {
     if (!songId) return;
+    track('song_shared', { title });
     const shareUrl = `${window.location.origin}${window.location.pathname}?share=${songId}`;
     try {
       await navigator.clipboard.writeText(shareUrl);
