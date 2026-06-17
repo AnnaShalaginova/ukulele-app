@@ -29,7 +29,10 @@ beforeEach(() => {
   supabase.from.mockImplementation((table) => ({
     select: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        order: vi.fn().mockResolvedValue({ data: mockSongs, error: null })
+        order: vi.fn().mockResolvedValue({ data: mockSongs, error: null }),
+        limit: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
+        })
       })
     }),
     update: vi.fn().mockReturnValue({

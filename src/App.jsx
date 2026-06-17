@@ -49,9 +49,32 @@ function App() {
   const [songs, setSongs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sharedSong, setSharedSong] = useState(null);
+  const [featuredSong, setFeaturedSong] = useState(null);
 
   // Detect chords for diagrams based on the main text area
   const chords = extractChords(chordsInput);
+
+  // =============================
+  // FEATURED SONG LOGIC
+  // =============================
+  useEffect(() => {
+    fetchFeaturedSong();
+  }, []);
+
+  async function fetchFeaturedSong() {
+    const { data, error } = await supabase
+      .from("songs")
+      .select("*")
+      .eq("is_featured", true)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching featured song:", error);
+    } else {
+      setFeaturedSong(data);
+    }
+  }
 
   // =============================
   // SHARED SONG LOGIC
@@ -78,19 +101,19 @@ function App() {
     }
   }
 
-  async function saveSharedSong() {
+  async function saveSharedSong(songToSave) {
     if (!user) {
       alert("Please sign in to save this song to your library!");
       return;
     }
 
     const songData = {
-      title: sharedSong.title,
-      chords_input: sharedSong.chords_input,
-      strumming: sharedSong.strumming,
-      youtube_url: sharedSong.youtube_url,
-      bpm: sharedSong.bpm,
-      chords_used: sharedSong.chords_used,
+      title: songToSave.title,
+      chords_input: songToSave.chords_input,
+      strumming: songToSave.strumming,
+      youtube_url: songToSave.youtube_url,
+      bpm: songToSave.bpm,
+      chords_used: songToSave.chords_used,
       user_id: user.id,
     };
 
@@ -99,7 +122,7 @@ function App() {
     if (error) {
       alert("Error cloning song: " + error.message);
     } else {
-      track('shared_song_cloned', { title: sharedSong.title });
+      track('shared_song_cloned', { title: songToSave.title });
       alert("Song added to your library! 🎶");
       fetchSongs();
       closeSharedSong();
@@ -271,14 +294,14 @@ function App() {
   // =============================
   return (
     <div className="container">
-      {/* SHARED SONG VIEW */}
-      {sharedSong && (
+      {/* SHARED / FEATURED SONG VIEW */}
+      {(sharedSong || featuredSong && isViewMode) && (
         <div className="shared-song-overlay">
           <div className="shared-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <span>📖 Viewing Shared Song</span>
+              <span>{sharedSong ? "📖 Viewing Shared Song" : "🌟 Song of the Week"}</span>
               {user ? (
-                <button className="primary-btn" onClick={saveSharedSong} style={{ padding: '5px 15px', fontSize: '0.9rem' }}>
+                <button className="primary-btn" onClick={() => saveSharedSong(sharedSong || featuredSong)} style={{ padding: '5px 15px', fontSize: '0.9rem' }}>
                   Save to My Library
                 </button>
               ) : (
@@ -287,15 +310,15 @@ function App() {
                 </button>
               )}
             </div>
-            <button className="cancel-btn" onClick={closeSharedSong}>Close Shared Song</button>
+            <button className="cancel-btn" onClick={closeSharedSong}>Close Viewer</button>
           </div>
           <SongViewer 
-            title={sharedSong.title} 
-            chordsInput={sharedSong.chords_input} 
-            strumming={sharedSong.strumming} 
-            youtubeUrl={sharedSong.youtube_url} 
-            bpm={sharedSong.bpm} 
-            songId={sharedSong.id}
+            title={(sharedSong || featuredSong).title} 
+            chordsInput={(sharedSong || featuredSong).chords_input} 
+            strumming={(sharedSong || featuredSong).strumming} 
+            youtubeUrl={(sharedSong || featuredSong).youtube_url} 
+            bpm={(sharedSong || featuredSong).bpm} 
+            songId={(sharedSong || featuredSong).id}
           />
           <hr className="shared-divider" />
         </div>
@@ -318,6 +341,17 @@ function App() {
               </button>
               <p>Sign in to save your songs and access your library.</p>
             </div>
+
+            {featuredSong && (
+              <div className="featured-song-card">
+                <div className="featured-badge">🌟 SONG OF THE WEEK</div>
+                <h3>{featuredSong.title}</h3>
+                <p>{featuredSong.chords_used || "Standard Chords"}</p>
+                <button className="primary-btn" onClick={() => setIsViewMode(true)}>
+                  Play Now
+                </button>
+              </div>
+            )}
 
             <div className="doc-links">
               <a href="https://github.com/AnnaShalaginova/ukulele-app/blob/main/PRD.md" target="_blank" rel="noopener noreferrer" className="doc-pill">

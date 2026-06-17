@@ -686,3 +686,41 @@ button {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* Featured Song Card */
+.featured-song-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin: 2rem auto;
+  max-width: 400px;
+  position: relative;
+  border: 2px solid var(--accent-orange);
+  animation: float 4s ease-in-out infinite;
+}
+
+.featured-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-orange);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.featured-song-card h3 {
+  margin: 0.5rem 0;
+  font-size: 1.4rem;
+}
+
+.featured-song-card p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
