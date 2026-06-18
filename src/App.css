@@ -278,6 +278,15 @@ button {
   background-color: var(--secondary-hover);
 }
 
+.featured-active {
+  background-color: var(--accent-orange) !important;
+  border-color: var(--accent-orange) !important;
+}
+
+.featured-active:hover {
+  background-color: #e67e22 !important;
+}
+
 .delete-btn, .cancel-btn {
   background-color: transparent;
   color: var(--danger-color);

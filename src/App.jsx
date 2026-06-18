@@ -276,6 +276,35 @@ function App() {
     if (!error) fetchSongs();
   }
 
+  async function toggleFeatureSong(id) {
+    // 1. Remove featured status from all songs
+    const { error: clearError } = await supabase
+      .from("songs")
+      .update({ is_featured: false })
+      .eq("is_featured", true);
+
+    if (clearError) {
+      console.error("Error clearing featured status:", clearError);
+      return;
+    }
+
+    // 2. Set new featured song
+    const { error: setError } = await supabase
+      .from("songs")
+      .update({ is_featured: true })
+      .eq("id", id);
+
+    if (setError) {
+      console.error("Error setting featured status:", setError);
+      alert("Error setting featured song");
+    } else {
+      track('song_featured', { song_id: id });
+      alert("New Song of the Week set! 🌟");
+      fetchSongs();
+      fetchFeaturedSong();
+    }
+  }
+
   // =============================
   // FILTERED SONGS LOGIC
   // =============================
@@ -473,6 +502,13 @@ Example:
                     <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}><strong>Chords / Structure:</strong> {song.chords_used || "—"}</p>
                     <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0" }}><strong>Style:</strong> {song.strumming || "—"} {song.bpm && ` | ${song.bpm} BPM`}</p>
                     <div className="song-actions">
+                      <button 
+                        className={`secondary-btn ${song.is_featured ? 'featured-active' : ''}`} 
+                        onClick={() => toggleFeatureSong(song.id)}
+                        title="Set as Song of the Week"
+                      >
+                        {song.is_featured ? "🌟 Featured" : "Feature"}
+                      </button>
                       <button className="secondary-btn" onClick={() => loadSong(song)}>Edit</button>
                       <button className="delete-btn" onClick={() => deleteSong(song.id)}>Delete</button>
                     </div>
